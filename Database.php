@@ -3,7 +3,6 @@
 class AF_Database {
 	private $master = null;
 	private $slave = null;
-	private $prepared = array();
 	
 	function __construct( $config ) {
 		$this->master = new AF_PDO($config['master']['dsn'], $config['master']['username'], $config['master']['password'], $config['master']['identifier']);
