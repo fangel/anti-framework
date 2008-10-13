@@ -5,9 +5,9 @@ class AF {
 	const DELAY_SAFE = 1;
 	
 	const NOTHING	= 0;
-	const PAGEGEN	= 1;
-	const DB		= 2;
-	const LOGGING	= 3;
+	const DB		= 1;
+	const LOGGING	= 2;
+	const PAGEGEN	= 3;
 	const ALL		= 3;
 	
 	protected static $config = array();
@@ -19,8 +19,11 @@ class AF {
 		self::$config = $config;
 	}
 	
-	public static function bootstrap( $level = AF::ALL ) {
+	public static function bootstrap( $level = AF::NOTHING ) {
 		switch( $level ) {
+			case AF::PAGEGEN:
+				self::$attributes['start'] = microtime(true);
+				register_shutdown_function( array('AF', 'shutdown') );
 			case AF::LOGGING:
 				if( isset(self::$config['log']) ) {
 					require dirname(__FILE__).'/Log.php';
@@ -31,9 +34,6 @@ class AF {
 					require dirname(__FILE__).'/Database.php';
 					self::$db = new AF_Database( self::$config['db'] );
 				}
-			case AF::PAGEGEN:
-				self::$attributes['start'] = microtime(true);
-				register_shutdown_function( array('AF', 'shutdown') );
 			case AF::NOTHING:
 		}
 	}
