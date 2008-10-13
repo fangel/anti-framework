@@ -33,12 +33,6 @@ class AF_Database {
 								$ret !== false, 
 								call_user_func( array($db, 'errorInfo') )
 			);
-		} else if( $name == 'prepare' ) {
-			$key = md5(reset($arguments) . '_' . $mode);
-			if( ! isset( $this->prepared[ $key ] ) ) {
-				$this->prepared[ $key ] = call_user_func_array( array($db, $name), $arguments );
-			} 
-			return $this->prepared[ $key ];
 		} else {
 			return call_user_func_array( array($db, $name), $arguments );
 		}
@@ -56,6 +50,7 @@ class AF_Database {
 
 class AF_PDO extends PDO {
 	private $identifier;
+	private $prepared = array();
 	
 	public function __construct( $dsn, $username, $password, $identifier ) {
 		parent::__construct( $dsn, $username, $password );
@@ -65,6 +60,13 @@ class AF_PDO extends PDO {
 	
 	public function getIdentifier() {
 		return $this->identifier;
+	}
+	
+	public function prepare( $statement, $driver_options = array() ) {
+		if( ! isset($this->prepared[ md5($statement) ] ) ) {
+			$this->prepared[ md5($statement) ] = parent::prepare( $statement, $driver_options );
+		}
+		return $this->prepared[ md5($statement) ];
 	}
 }
 
