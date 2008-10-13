@@ -6,17 +6,9 @@ class AF_Database {
 	private $prepared = array();
 	
 	function __construct( $config ) {
-		if( !isset($config['master']['dsn']) ) {
-			// TODO: Choose at random
-			$config['master'] = reset($config['master']);
-		}
 		$this->master = new AF_PDO($config['master']['dsn'], $config['master']['username'], $config['master']['password'], $config['master']['identifier']);
 		
 		if( isset( $config['slave'])) {
-			if( !isset( $config['slave']['dsn'] ) ) {
-				// TODO: Choose at random
-				$config['slave'] = reset($config['slave']);
-			}
 			$this->slave = new AF_PDO($config['slave']['dsn'], $config['slave']['username'], $config['slave']['password'], $config['slave']['identifier']);
 		} else {
 			$this->slave = $this->master;
@@ -26,37 +18,39 @@ class AF_Database {
 	public function __call( $name, $arguments ) {
 		$mode = array_pop($arguments);
 		$callback = array();
-		if( $mode == AF::DELAY_SAFE ) {
+		if( $mode == AF::DELAY_SAFE )
 			$db = $this->slave;
-		} else {
+		else
 			$db = $this->master;
-		}
 		
 		if( in_array($name, array('query', 'exec') ) ) {
 			$start = microtime(true);
 			$ret = call_user_func_array( array($db, $name), $arguments );
 			$end = microtime(true);
-			$log = array(
-				'query' => reset($arguments),
-				'duration' => ($end - $start)*1000,
-				'identifier' => $this->getIdentifier(),
-				'success' => true
+			AF_Database::log(	reset($arguments), 
+								($end - $start)*1000, 
+								$this, 
+								$ret !== false, 
+								call_user_func( array($db, 'errorInfo') )
 			);
-			if( $ret === false ) {
-				$log['success'] = false;
-				$log['errorMsg'] = end(call_user_func( array($db, 'errorInfo') ));
-			}
-			AF::log('query', $log);
 		} else if( $name == 'prepare' ) {
 			$key = md5(reset($arguments) . '_' . $mode);
 			if( ! isset( $this->prepared[ $key ] ) ) {
-				$stmt = call_user_func_array( array($db, $name), $arguments );
-				$this->prepared[ $key ] = $stmt;
+				$this->prepared[ $key ] = call_user_func_array( array($db, $name), $arguments );
 			} 
 			return $this->prepared[ $key ];
 		} else {
 			return call_user_func_array( array($db, $name), $arguments );
 		}
+	}
+	
+	public static function log( $query, $dur, $pdo, $success, $errorMsg = null ) {
+		AF::Log('query', array(	'query' => $query,
+								'duration' => $dur,
+								'identifier' => $pdo->getIdentifier(),
+								'success' => (bool) $success,
+								'errorMsg' => end($errorMsg)
+		));
 	}
 }
 
@@ -86,18 +80,12 @@ class AF_PDOStatement extends PDOStatement {
 		$start = microtime(true);
 		$ret = parent::execute( $input_parameters );
 		$end = microtime(true);
-		$log = array(
-			'query' => $this->queryString,
-			'duration' => ($end - $start)*1000,
-			'identifier' => $this->pdo->getIdentifier(),
-			'success' => true
+		AF_Database::log(	$this->queryString, 
+							($end - $start)*1000, 
+							$this->pdo, 
+							$ret !== false, 
+							$this->errorInfo()
 		);
-		if( $ret === false ) {
-			$log['success'] = false;
-			$log['errorMsg'] = end($this->errorInfo());
-		}
-		
-		AF::log('query', $log);
 	}
 	
 	public function lastInsertId() {

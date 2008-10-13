@@ -39,7 +39,7 @@ class AF_Object {
 			$this->is_new = false;
 		}
 		
-		return $ret !== false
+		return $ret !== false;
 	}
 	
 	public function toArray() {	return $vars; }	
