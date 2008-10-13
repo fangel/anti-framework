@@ -3,13 +3,13 @@
 class AF_Database {
 	private $master = null;
 	private $slave = null;
+	private $prepared = array();
 	
 	function __construct( $config ) {
 		if( !isset($config['master']['dsn']) ) {
 			// TODO: Choose at random
 			$config['master'] = reset($config['master']);
 		}
-		
 		$this->master = new AF_PDO($config['master']['dsn'], $config['master']['username'], $config['master']['password'], $config['master']['identifier']);
 		
 		if( isset( $config['slave'])) {
@@ -17,7 +17,6 @@ class AF_Database {
 				// TODO: Choose at random
 				$config['slave'] = reset($config['slave']);
 			}
-			
 			$this->slave = new AF_PDO($config['slave']['dsn'], $config['slave']['username'], $config['slave']['password'], $config['slave']['identifier']);
 		} else {
 			$this->slave = $this->master;
@@ -48,6 +47,13 @@ class AF_Database {
 				$log['errorMsg'] = end(call_user_func( array($db, 'errorInfo') ));
 			}
 			AF::log('query', $log);
+		} else if( $name == 'prepare' ) {
+			$key = md5(reset($arguments) . '_' . $mode);
+			if( ! isset( $this->prepared[ $key ] ) ) {
+				$stmt = call_user_func_array( array($db, $name), $arguments );
+				$this->prepared[ $key ] = $stmt;
+			} 
+			return $this->prepared[ $key ];
 		} else {
 			return call_user_func_array( array($db, $name), $arguments );
 		}
@@ -92,5 +98,9 @@ class AF_PDOStatement extends PDOStatement {
 		}
 		
 		AF::log('query', $log);
+	}
+	
+	public function lastInsertId() {
+		return $this->pdo->lastInsertId();
 	}
 }

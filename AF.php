@@ -1,14 +1,15 @@
 <?php
 
 class AF {
-	const NO_DELAY = 0;
-	const DELAY_SAFE = 1;
+	const NO_DELAY		= 0;
+	const DELAY_SAFE	= 1;
 	
-	const NOTHING	= 0;
-	const DB		= 1;
-	const LOGGING	= 2;
-	const PAGEGEN	= 3;
-	const ALL		= 3;
+	const NOTHING		= 0;
+	const DB			= 1;
+	const LOGGING		= 2;
+	const ORM			= 3;
+	const PAGE_GEN		= 4;
+	const ALL			= 4;
 	
 	protected static $config = array();
 	protected static $db = null;
@@ -21,9 +22,11 @@ class AF {
 	
 	public static function bootstrap( $level = AF::NOTHING ) {
 		switch( $level ) {
-			case AF::PAGEGEN:
+			case AF::PAGE_GEN:
 				self::$attributes['start'] = microtime(true);
 				register_shutdown_function( array('AF', 'shutdown') );
+			case AF::ORM:
+				require dirname(__FILE__).'/ORM.php';
 			case AF::LOGGING:
 				if( isset(self::$config['log']) ) {
 					require dirname(__FILE__).'/Log.php';
