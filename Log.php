@@ -1,22 +1,5 @@
 <?php
 
-class AF_Log {
-	public static function factory( $config ) {
-		$type = $config['type'];
-		if( class_exists( $type ) ) {
-			$log = new $type($config['params']);
-			if( $log instanceof AF_Log_Interface ) {
-				return $log;
-			}
-		}
-		return null;
-	}
-}
-
-interface AF_Log_Interface {
-	public function log( $type, $msg );
-}
-
 class AF_Log_Array implements AF_Log_Interface {
 	private $log = array();
 	
@@ -29,7 +12,7 @@ class AF_Log_Array implements AF_Log_Interface {
 	
 	public function printLog() {
 		foreach( $this->log AS $type => $log ) {
-			echo '<h1>' . $type . '</h1>';
+			echo '<h1>' . $type . '</h1>' . "\n";
 			foreach( $log AS $entry ) {
 				var_dump($entry);
 			}

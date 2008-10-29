@@ -6,9 +6,11 @@ class AF_Database {
 	
 	function __construct( $config ) {
 		$this->master = new AF_PDO($config['master']['dsn'], $config['master']['username'], $config['master']['password'], $config['master']['identifier']);
+		$this->master->exec('SET NAMES utf8');
 		
 		if( isset( $config['slave'])) {
 			$this->slave = new AF_PDO($config['slave']['dsn'], $config['slave']['username'], $config['slave']['password'], $config['slave']['identifier']);
+			$this->slave->exec('SET NAMES utf8');
 		} else {
 			$this->slave = $this->master;
 		}
@@ -22,16 +24,13 @@ class AF_Database {
 		else
 			$db = $this->master;
 		
+		// TODO: Move this to AF_PDO::query() and AF_PDO::exec()
 		if( in_array($name, array('query', 'exec') ) ) {
-			$start = microtime(true);
+				$start = microtime(true);
 			$ret = call_user_func_array( array($db, $name), $arguments );
-			$end = microtime(true);
-			AF_Database::log(	reset($arguments), 
-								($end - $start)*1000, 
-								$this, 
-								$ret !== false, 
-								call_user_func( array($db, 'errorInfo') )
-			);
+				$end = microtime(true);
+				AF_Database::log( reset($arguments), $end-$start, $this, $ret!==false, call_user_func(array($db,'errorInfo')) );
+			return $ret;
 		} else {
 			return call_user_func_array( array($db, $name), $arguments );
 		}
@@ -39,7 +38,7 @@ class AF_Database {
 	
 	public static function log( $query, $dur, $pdo, $success, $errorMsg = null ) {
 		AF::Log('query', array(	'query' => $query,
-								'duration' => $dur,
+								'duration' => $dur * 1000,
 								'identifier' => $pdo->getIdentifier(),
 								'success' => (bool) $success,
 								'errorMsg' => end($errorMsg)
@@ -78,15 +77,11 @@ class AF_PDOStatement extends PDOStatement {
 	}
 	
 	public function execute( $input_parameters = null ) {
-		$start = microtime(true);
+			$start = microtime(true);
 		$ret = parent::execute( $input_parameters );
-		$end = microtime(true);
-		AF_Database::log(	$this->queryString, 
-							($end - $start)*1000, 
-							$this->pdo, 
-							$ret !== false, 
-							$this->errorInfo()
-		);
+			$end = microtime(true);
+			AF_Database::log($this->queryString, $end-$start, $this->pdo, $ret!==false, $this->errorInfo() );
+		return $ret;
 	}
 	
 	public function lastInsertId() {
