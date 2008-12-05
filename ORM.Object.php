@@ -1,16 +1,38 @@
 <?php
 
+/**
+ * The classes that corresponds to a row in a database.
+ * Supports - well, saving.
+ * Access to the internal variables is handled via 
+ * __get and __set
+ * @author Morten Fangel <fangel@sevengoslings.net>
+ */
 class AF_Object {
 	private $table = null;
 	private $vars = array();
 	private $is_new = true;
 	
-	public function __construct( $table, $vars = array(), $is_new = true ) {
+	/**
+	 * Constructs a new AF_Object
+	 * @param AF_Table $table
+	 * @param array $vars
+	 * @param bool $is_new
+	 */
+	public function __construct( AF_Table $table, $vars = array(), $is_new = true ) {
 		$this->table = $table;
 		$this->vars = $vars;
 		$this->is_new = $is_new;
 	}
 	
+	/**
+	 * Saves the object to the database
+	 * Note that setting $mode til AF::DELAY_SAFE will not
+	 * lead to the database-call being executed with that
+	 * mode. Instead the SQL is changed to a low-priority
+	 * call, and executed with AF::NO_DELAY
+	 * @param int $mode
+	 * @return bool
+	 */
 	public function save( $mode = AF::NO_DELAY ) {
 		if( $this->table->primary_key == false ) return false;
 		
@@ -40,7 +62,9 @@ class AF_Object {
 		$ret = $stmt->execute($vars);
 		
 		if( $this->is_new ) {
-			$this->{$this->table->primary_key} = $stmt->lastInsertId();
+			if( $this->table->primary_key ) {
+				$this->{$this->table->primary_key} = $stmt->lastInsertId();
+			}
 			$this->is_new = false;
 		}
 		

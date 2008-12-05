@@ -3,6 +3,12 @@
 require dirname(__FILE__) . '/Interfaces.php';
 require dirname(__FILE__) . '/Factory.php';
 
+/**
+ * The main interface of AF
+ * Basically you call setConfig, and the bootstrap() and your on your
+ * way..
+ * @author Morten Fangel <fangel@sevengoslings.net>
+ */
 class AF {
 	const NO_DELAY		= 0;
 	const DELAY_SAFE	= 1;
@@ -22,10 +28,20 @@ class AF {
 	protected static $attributes = array();
 	protected static $registry = null;
 	
+	/**
+	 * Update the config of AF (overrides, doesn't append)
+	 * @param $config array
+	 */
 	public static function setConfig( $config ) {
 		self::$config = $config;
 	}
 	
+	/**
+	 * Prime AF for use.
+	 * Use one of the AF::[level] constants to indicate to what level
+	 * you need AF at
+	 * @param $level int 
+	 */
 	public static function bootstrap( $level = AF::NOTHING ) {
 		switch( $level ) {
 			case AF::PAGE_GEN:
@@ -51,29 +67,53 @@ class AF {
 		}
 	}
 	
+	/**
+	 * Return the DB object
+	 * @return AF_Database
+	 */
 	public static function DB() {
 		return self::$db;
 	}
 	
+	/**
+	 * Add a message to the log (if no log is initiated, it's ignored)
+	 * @param string $type
+	 * @param string $msg
+	 */
 	public static function log( $type, $msg ) {
 		if( self::$log ) {
 			self::$log->log( $type, $msg );
 		}
 	}
 	
+	/**
+	 * Return the log instance
+	 * @return AF_Log_Interface
+	 */
 	public static function getLog() {
 		return self::$log;
 	}
 	
+	/**
+	 * Create a new template
+	 * @return AF_Template_Interface
+	 */
 	public static function template() {
 		$config = (isset(self::$config['template'])) ? self::$config['template'] : array();
 		return AF_Factory::template( $config );
 	}
 	
+	/**
+	 * Return the registry (a ArrayObject).
+	 */
 	public static function registry() {
 		return self::$registry;
 	}
 	
+	/**
+	 * A shutdown-method. It's called if AF is loaded with AF::PAGEGEN
+	 * Ends the page-gen timer and calls AF::log() with type 'pagegen'
+	 */
 	public static function shutdown() {
 		self::$attributes['end'] = microtime(true);
 		$duration = self::$attributes['end'] - self::$attributes['start'];

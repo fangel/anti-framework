@@ -3,6 +3,11 @@
 class AF_Log_Array implements AF_Log_Interface {
 	private $log = array();
 	
+	public function __construct( $params ) {
+		if( isset($params['register_shutdown']) && $params['register_shutdown'] )
+			register_shutdown_function( array($this, 'printLog') );
+	}
+	
 	public function log( $type, $msg ) {
 		if( !isset($this->log[$type]) ) {
 			$this->log[$type] = array();

@@ -45,6 +45,7 @@ class AF_Table {
 	
 	/**
 	 * Performs a SELECT * limited by $offset, $limit
+	 * CONSIDER: is fetchLimited really the best name for this?
 	 * @param int $limit
 	 * @param int $offset
 	 * @param int $mode
