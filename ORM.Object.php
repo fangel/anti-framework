@@ -35,6 +35,7 @@ class AF_Object {
 	 */
 	public function save( $mode = AF::NO_DELAY ) {
 		if( $this->table->primary_key == false ) return false;
+		$this->vars = array_filter( $this->vars, 'strlen' );
 		
 		$vars = $this->vars;		
 		$sql = '';
@@ -42,7 +43,7 @@ class AF_Object {
 			$delayed = ($mode == AF::DELAY_SAFE) ? ' DELAYED ' : '';
 			
 			$sql  = 'INSERT ' . $delayed . ' INTO ' . $this->table->table;
-			$sql .= '(' . implode(', ', array_keys($vars)) . ') ';
+			$sql .= '(`' . implode('`, `', array_keys($vars)) . '`) ';
 			$sql .= 'VALUES (:' . implode(', :', array_keys($vars)) . ')';
 		} else {
 			$primary = $vars[$this->table->primary_key];
@@ -52,7 +53,7 @@ class AF_Object {
 			
 			$sql = 'UPDATE ' . $delayed . $this->table->table . ' SET ';
 			foreach( array_keys($vars) As $v )
-				$sql .= $v . ' = :' . $v . ', ';
+				$sql .= '`' . $v . '` = :' . $v . ', ';
 			$sql = substr($sql, 0, -2) . ' WHERE ' . $this->table->primary_key . ' = :id';
 			
 			$vars['id'] = $primary;

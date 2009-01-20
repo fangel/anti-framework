@@ -86,7 +86,7 @@ class AF_Table {
 	 * @return AF_Object
 	 */
 	public function find( $key, $value, $mode ) {
-		return reset($this->fetch($key . ' = ?', $value, $mode));
+		return reset($this->fetch('`'.$key . '` = ?', $value, $mode));
 	}
 	
 	/**

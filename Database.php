@@ -64,12 +64,12 @@ class AF_Database {
 	 * @param string $errorMsg
 	 */
 	public static function log( $query, $dur, $pdo, $success, $errorMsg = null ) {
-		AF::Log('query', array(	'query' => $query,
+		AF::Log('query', array_filter(array(	'query' => $query,
 								'duration' => $dur * 1000,
 								'identifier' => $pdo->getIdentifier(),
 								'success' => (bool) $success,
-								'errorMsg' => end($errorMsg)
-		));
+								'errorMsg' => (end($errorMsg) !== '00000') ? end($errorMsg) : null
+		)),'strlen');
 	}
 }
 
