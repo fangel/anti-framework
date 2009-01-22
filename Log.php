@@ -16,11 +16,16 @@ class AF_Log_Array implements AF_Log_Interface {
 	}
 	
 	public function printLog() {
+		if( defined('AF_LOG_ARRAY_QUIET') && AF_LOG_ARRAY_QUIET ) return;
+		
+		echo "\n\n\n\n";
 		foreach( $this->log AS $type => $log ) {
-			echo '<h1>' . $type . '</h1>' . "\n";
+			echo '<h1>' . $type . '</h1>' . "\n" . '<pre>';
 			foreach( $log AS $entry ) {
-				var_dump($entry);
+				echo "\n";
+				var_export($entry);
 			}
+			echo "\n" . '</pre>' . "\n";
 		}
 	}
 }
