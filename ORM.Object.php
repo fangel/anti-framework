@@ -34,7 +34,6 @@ class AF_Object {
 	 * @return bool
 	 */
 	public function save( $mode = AF::NO_DELAY ) {
-		if( $this->table->primary_key == false ) return false;
 		$this->vars = array_filter( $this->vars, 'strlen' );
 		
 		$vars = $this->vars;		
@@ -46,6 +45,8 @@ class AF_Object {
 			$sql .= '(`' . implode('`, `', array_keys($vars)) . '`) ';
 			$sql .= 'VALUES (:' . implode(', :', array_keys($vars)) . ')';
 		} else {
+			if( $this->table->primary_key == false ) return false;
+			
 			$primary = $vars[$this->table->primary_key];
 			unset($vars[$this->table->primary_key]);
 			
@@ -56,7 +57,7 @@ class AF_Object {
 				$sql .= '`' . $v . '` = :' . $v . ', ';
 			$sql = substr($sql, 0, -2) . ' WHERE ' . $this->table->primary_key . ' = :id';
 			
-			$vars['id'] = $primary;
+			$vars[$this->table->primary_key] = $primary;
 		}
 
 		$stmt = AF::DB()->prepare( $sql, AF::NO_DELAY);

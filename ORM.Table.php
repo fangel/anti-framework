@@ -58,15 +58,22 @@ class AF_Table {
 	/**
 	 * Executes the full sql-query
 	 * Replaces ':table' and ':primary' with the table name and the name of the primary key
+	 * If $boolean is set to true, this function will return a boolean on success/failure
+	 * Otherwise it will return an array. An empty array could be because of error, or just
+	 * no results. So be careful.
 	 * @param string $sql
 	 * @param array $parameters
 	 * @param int $mode
+	 * @param bool $boolean 
 	 * @return AF_Object[]
 	 */
-	public function query( $sql, $parameters, $mode ) {
+	public function query( $sql, $parameters, $mode, $boolean = false ) {
 		$sql = str_replace(array(':table', ':primary'), array($this->table, $this->primary_key), $sql);
 		$stmt = AF::DB()->prepare($sql, $mode);
-		$stmt->execute( (array) $parameters );
+		$status = $stmt->execute( (array) $parameters );
+		if( ! $status ) { return ($boolean) ? false : array(); }
+		if( $boolean ) { return true; }
+		
 		$objs = array();
 		while( $vars = $stmt->fetch() ) {
 			if( $this->primary_key )
