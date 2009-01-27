@@ -49,6 +49,11 @@ class AF_Template implements AF_Template_Interface {
 	public function __get($name) { return $this->vars[$name]; }
 	public function __set($name, $value) { $this->vars[$name] = $value; }
 	public function __isset($name) { return isset($this->vars[$name]); }
+	public function __call( $name, $args ) {
+		if( isset($this->vars[$name]) && is_callable( $this->vars[$name]) ) {
+			return call_user_func_array( $this->vars[$name], $args);
+		}
+	}
 	
 	/**
 	 * Adds a list of pre set variables. This list of variables
