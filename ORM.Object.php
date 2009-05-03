@@ -8,9 +8,9 @@
  * @author Morten Fangel <fangel@sevengoslings.net>
  */
 class AF_Object {
-	private $table = null;
-	private $vars = array();
-	private $is_new = true;
+	protected $table = null;
+	protected $vars = array();
+	protected $is_new = true;
 	
 	/**
 	 * Constructs a new AF_Object
@@ -31,9 +31,10 @@ class AF_Object {
 	 * mode. Instead the SQL is changed to a low-priority
 	 * call, and executed with AF::NO_DELAY
 	 * @param int $mode
+	 * @param AF_PDO $transaction 
 	 * @return bool
 	 */
-	public function save( $mode = AF::NO_DELAY ) {
+	public function save( $mode = AF::NO_DELAY, AF_PDO $transaction = null ) {
 		$this->vars = array_filter( $this->vars, 'strlen' );
 		
 		$vars = $this->vars;		
@@ -60,7 +61,12 @@ class AF_Object {
 			$vars[$this->table->primary_key] = $primary;
 		}
 
-		$stmt = AF::DB()->prepare( $sql, AF::NO_DELAY);
+		if( $transaction ) {
+			$stmt = $transaction->prepare( $sql );
+		} else {
+			$stmt = AF::DB()->prepare( $sql, AF::NO_DELAY);
+		}
+		
 		$ret = $stmt->execute($vars);
 		
 		if( $this->is_new ) {
