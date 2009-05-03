@@ -33,10 +33,13 @@ class AF_Table {
 		$sql = 'SELECT * FROM :table';
 		if( $condition !== null )
 			$sql .= ' WHERE ' . $condition;
+		if( isset($parameters['order']) )
+			$sql .= ' ORDER BY ' . $parameters['order'];
 		if( isset($parameters['limit'], $parameters['offset']) )
 			$sql .= ' LIMIT ' . $parameters['offset'] . ', ' . $parameters['limit'];
 		else if( isset($parameters['limit']) )
 			$sql .= ' LIMIT ' . $parameters['limit'];
+		unset($parameters['order']);
 		unset($parameters['limit']);
 		unset($parameters['offset']);
 		
