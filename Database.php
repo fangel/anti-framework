@@ -33,10 +33,10 @@ class AF_Database {
 	 * - if you know what you're doing..
 	 * Mainly useful if you're doing a transaction of raw
 	 * SQL..
-	 * @param string $server master or slave
+	 * @param string $server master or slave. Defaults to master
 	 * @return AF_PDO
 	 */
-	public function getPDO($server) {
+	public function getPDO($server = 'master') {
 		switch( $server ) {
 			case 'slave':
 				return $this->slave;
