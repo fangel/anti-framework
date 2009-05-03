@@ -29,6 +29,24 @@ class AF_Database {
 	}
 	
 	/**
+	 * Returns the AF_PDO object, so you can fiddle with it
+	 * - if you know what you're doing..
+	 * Mainly useful if you're doing a transaction of raw
+	 * SQL..
+	 * @param string $server master or slave
+	 * @return AF_PDO
+	 */
+	public function getPDO($server) {
+		switch( $server ) {
+			case 'slave':
+				return $this->slave;
+			case 'master':
+			default:
+				return $this->master;
+		}
+	}
+	
+	/**
 	 * Method-overloading. Handles the forwarding of calls to either the
 	 * master or slave database object. 
 	 * @param string $name
